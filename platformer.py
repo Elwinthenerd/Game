@@ -18,6 +18,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+YELLOW = (255, 150, 100)
 
 # Player properties
 player_width = 50
@@ -25,29 +26,30 @@ player_height = 50
 player_speed = 5
 jump_speed = 15
 gravity = 0.4
- 
+
 # Scroll variables
 scroll_x = 0
 
 # Lava zone (entire bottom of the screen)
 lava_rect = pygame.Rect(500, HEIGHT - 50, WIDTH * 5, 50)  # Wide lava covering bottom of screen
-floor_rect = pygame.Rect(0, HEIGHT - 30, 500, 30)
+floor_rect = pygame.Rect(0, HEIGHT - 30, 500, 30)  # Floor at the bottom
 
 # Game states
-current_level = 1
+current_level = 5
 game_complete = False
 
 # Function to reset player position and velocity
 def reset_player():
     global player_x, player_y, player_vel_x, player_vel_y
     player_x = WIDTH // 2 - player_width // 2
-    player_y = HEIGHT - player_height - 50
+    player_y = HEIGHT - player_height - 100  # Adjusted to start above the lava
     player_vel_x = 0
     player_vel_y = 0
 
 # Function to load level-specific platforms, spikes, and portals
 def load_level(level):
-    global platforms, spikes, portal, player_x, player_y
+    global platforms, spikes, portal
+    reset_player()  # Reset player position when loading a new level
 
     if level == 1:
         platforms = [
@@ -63,7 +65,6 @@ def load_level(level):
             pygame.Rect(1700, HEIGHT - 320, 50, 20)
         ]
         portal = pygame.Rect(2400, HEIGHT - 70, 50, 50)
-        reset_player()
 
     elif level == 2:
         platforms = [
@@ -75,12 +76,11 @@ def load_level(level):
             pygame.Rect(1800, HEIGHT - 450, 150, 20)
         ]
         spikes = [
-            pygame.Rect(350, HEIGHT - 270, 50, 20),
-            pygame.Rect(850, HEIGHT - 420, 50, 20),
-            pygame.Rect(1600, HEIGHT - 320, 50, 20)
+            pygame.Rect(400, HEIGHT - 270, 50, 20),
+            pygame.Rect(800, HEIGHT - 420, 50, 20),
+            pygame.Rect(1500, HEIGHT - 320, 50, 20)
         ]
         portal = pygame.Rect(2200, HEIGHT - 70, 50, 50)
-        reset_player()
 
     elif level == 3:
         platforms = [
@@ -93,12 +93,11 @@ def load_level(level):
             pygame.Rect(2100, HEIGHT - 450, 100, 20)
         ]
         spikes = [
-            pygame.Rect(400, HEIGHT - 320, 50, 20),
-            pygame.Rect(750, HEIGHT - 470, 50, 20),
-            pygame.Rect(1400, HEIGHT - 220, 50, 20),
+            pygame.Rect(325, HEIGHT - 320, 50, 20),
+            pygame.Rect(675, HEIGHT - 470, 50, 20),
+            pygame.Rect(1500, HEIGHT - 220, 50, 20),
         ]
         portal = pygame.Rect(2400, HEIGHT - 70, 50, 50)
-        reset_player()
 
     elif level == 4:
         platforms = [
@@ -111,12 +110,11 @@ def load_level(level):
             pygame.Rect(2100, HEIGHT - 150, 100, 20)
         ]
         spikes = [
-            pygame.Rect(500, HEIGHT - 370, 50, 20),
+            pygame.Rect(625, HEIGHT - 370, 50, 20),
             pygame.Rect(850, HEIGHT - 520, 50, 20),
-            pygame.Rect(1500, HEIGHT - 320, 50, 20)
+            pygame.Rect(1600, HEIGHT - 320, 50, 20)
         ]
         portal = pygame.Rect(2300, HEIGHT - 70, 50, 50)
-        reset_player()
 
     elif level == 5:
         platforms = [
@@ -129,11 +127,10 @@ def load_level(level):
         ]
         spikes = [
             pygame.Rect(200, HEIGHT - 120, 50, 20),
-            pygame.Rect(900, HEIGHT - 170, 50, 20),
-            pygame.Rect(1600, HEIGHT - 320, 50, 20)
+            pygame.Rect(1025, HEIGHT - 170, 50, 20),
+            pygame.Rect(1700, HEIGHT - 320, 50, 20)
         ]
         portal = pygame.Rect(2200, HEIGHT - 70, 50, 50)
-        reset_player()
 
 # Function to show "Game Complete" screen
 def show_game_complete():
@@ -144,6 +141,7 @@ def show_game_complete():
     text = font.render('Game Complete!', True, BLACK)
     SCREEN.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
     pygame.display.flip()
+    pygame.time.wait(100000)
 
 # Load the first level
 load_level(current_level)
@@ -167,9 +165,9 @@ while running:
 
     on_ground_or_platform = False
 
-    # Collision detection with the ground (above lava)
-    if player_y + player_height >= HEIGHT - lava_rect.height - :
-        player_y = HEIGHT - lava_rect.height - 29
+    # Collision detection with lava
+    if player_y + player_height >= HEIGHT - lava_rect.height + 19:
+        player_y = HEIGHT - lava_rect.height - player_height + 19  # Position above lava
         player_vel_y = 0
         on_ground_or_platform = True
 
@@ -190,12 +188,6 @@ while running:
     # Collision with lava (reset player)
     if player_rect.colliderect(lava_rect):
         reset_player()
-
-    if player_rect.colliderect(floor_rect):
-        if player_vel_y >= 0:  # Falling
-                player_y = platform.y - player_height
-                player_vel_y = 0
-                on_ground_or_platform = True
 
     # Collision with portal (advance to next level)
     if player_rect.colliderect(portal):
@@ -244,7 +236,7 @@ while running:
     pygame.draw.rect(SCREEN, GREEN, (portal.x - scroll_x, portal.y, portal.width, portal.height))
 
     # Draw the player
-    pygame.draw.rect(SCREEN, BLACK, (player_x - scroll_x, player_y, player_width, player_height))
+    pygame.draw.rect(SCREEN, YELLOW, (player_x - scroll_x, player_y, player_width, player_height))
 
     # Update the display
     pygame.display.flip()
